@@ -7,7 +7,6 @@ enabling Python development workflows directly through the assistant.
 """
 
 import asyncio
-import os
 import subprocess
 from typing import Any
 
@@ -22,20 +21,23 @@ from mcp.types import (
 # Create the MCP server instance
 server = Server("uv-tools")
 
-# Store workspace directory from initialization
-_workspace_dir: str | None = None
+# Tools that require explicit cwd (project-scoped operations)
+_PROJECT_TOOLS = {
+    "uv_init", "uv_add", "uv_remove", "uv_sync",
+    "uv_run", "uv_pip_list", "uv_lock"
+}
 
 
-def get_workspace_cwd(arguments: dict[str, Any]) -> str:
-    """Get the working directory, requiring explicit cwd for project operations."""
+def require_cwd(arguments: dict[str, Any], tool_name: str) -> str | None:
+    """
+    Get cwd from arguments, returning None if missing.
+    For project-scoped tools, cwd is mandatory to prevent
+    accidental operations on the plugin directory.
+    """
     cwd = arguments.get("cwd")
-    if cwd:
-        return cwd
-    # Fall back to workspace if set during initialization
-    if _workspace_dir:
-        return _workspace_dir
-    # Last resort: use PWD from environment (set by Claude Code)
-    return os.environ.get("PWD", os.getcwd())
+    if not cwd and tool_name in _PROJECT_TOOLS:
+        return None  # Signal that cwd is missing
+    return cwd
 
 
 def run_uv_command(args: list[str], cwd: str | None = None) -> dict[str, Any]:
@@ -265,8 +267,17 @@ async def list_tools() -> list[Tool]:
 @server.call_tool()
 async def call_tool(name: str, arguments: dict[str, Any]) -> CallToolResult:
     """Handle tool calls."""
-    # Get workspace directory - never default to plugin directory
-    cwd = get_workspace_cwd(arguments)
+    # For project-scoped tools, cwd is mandatory - no fallback allowed
+    cwd = require_cwd(arguments, name)
+    if cwd is None and name in _PROJECT_TOOLS:
+        return CallToolResult(
+            content=[TextContent(
+                type="text",
+                text=f"[Error] Missing required 'cwd' parameter. "
+                     f"Tool '{name}' requires an explicit working directory to prevent "
+                     f"accidental operations on the plugin directory instead of your project."
+            )]
+        )
 
     if name == "uv_init":
         args = ["init"]

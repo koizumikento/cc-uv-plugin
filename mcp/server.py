@@ -7,10 +7,8 @@ enabling Python development workflows directly through the assistant.
 """
 
 import asyncio
-import json
+import os
 import subprocess
-import sys
-from pathlib import Path
 from typing import Any
 
 from mcp.server import Server
@@ -23,6 +21,21 @@ from mcp.types import (
 
 # Create the MCP server instance
 server = Server("uv-tools")
+
+# Store workspace directory from initialization
+_workspace_dir: str | None = None
+
+
+def get_workspace_cwd(arguments: dict[str, Any]) -> str:
+    """Get the working directory, requiring explicit cwd for project operations."""
+    cwd = arguments.get("cwd")
+    if cwd:
+        return cwd
+    # Fall back to workspace if set during initialization
+    if _workspace_dir:
+        return _workspace_dir
+    # Last resort: use PWD from environment (set by Claude Code)
+    return os.environ.get("PWD", os.getcwd())
 
 
 def run_uv_command(args: list[str], cwd: str | None = None) -> dict[str, Any]:
@@ -70,7 +83,7 @@ async def list_tools() -> list[Tool]:
     return [
         Tool(
             name="uv_init",
-            description="Initialize a new Python project with uv. Creates pyproject.toml and sets up the project structure.",
+            description="Initialize a new Python project with uv. Creates pyproject.toml and sets up the project structure. IMPORTANT: Always specify cwd to target the user's workspace.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -84,14 +97,15 @@ async def list_tools() -> list[Tool]:
                     },
                     "cwd": {
                         "type": "string",
-                        "description": "Working directory for the command",
+                        "description": "Working directory (user's project path). Required to avoid operating on wrong directory.",
                     },
                 },
+                "required": ["cwd"],
             },
         ),
         Tool(
             name="uv_add",
-            description="Add dependencies to the project. Supports regular and development dependencies.",
+            description="Add dependencies to the project. Supports regular and development dependencies. IMPORTANT: Always specify cwd.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -107,15 +121,15 @@ async def list_tools() -> list[Tool]:
                     },
                     "cwd": {
                         "type": "string",
-                        "description": "Working directory for the command",
+                        "description": "Working directory (user's project path). Required.",
                     },
                 },
-                "required": ["packages"],
+                "required": ["packages", "cwd"],
             },
         ),
         Tool(
             name="uv_remove",
-            description="Remove dependencies from the project.",
+            description="Remove dependencies from the project. IMPORTANT: Always specify cwd.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -126,15 +140,15 @@ async def list_tools() -> list[Tool]:
                     },
                     "cwd": {
                         "type": "string",
-                        "description": "Working directory for the command",
+                        "description": "Working directory (user's project path). Required.",
                     },
                 },
-                "required": ["packages"],
+                "required": ["packages", "cwd"],
             },
         ),
         Tool(
             name="uv_sync",
-            description="Sync the project environment with dependencies defined in pyproject.toml.",
+            description="Sync the project environment with dependencies defined in pyproject.toml. IMPORTANT: Always specify cwd.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -145,14 +159,15 @@ async def list_tools() -> list[Tool]:
                     },
                     "cwd": {
                         "type": "string",
-                        "description": "Working directory for the command",
+                        "description": "Working directory (user's project path). Required.",
                     },
                 },
+                "required": ["cwd"],
             },
         ),
         Tool(
             name="uv_run",
-            description="Run a command in the project environment.",
+            description="Run a command in the project environment. IMPORTANT: Always specify cwd.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -163,15 +178,15 @@ async def list_tools() -> list[Tool]:
                     },
                     "cwd": {
                         "type": "string",
-                        "description": "Working directory for the command",
+                        "description": "Working directory (user's project path). Required.",
                     },
                 },
-                "required": ["command"],
+                "required": ["command", "cwd"],
             },
         ),
         Tool(
             name="uv_pip_list",
-            description="List installed packages in the project environment.",
+            description="List installed packages in the project environment. IMPORTANT: Always specify cwd.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -183,14 +198,15 @@ async def list_tools() -> list[Tool]:
                     },
                     "cwd": {
                         "type": "string",
-                        "description": "Working directory for the command",
+                        "description": "Working directory (user's project path). Required.",
                     },
                 },
+                "required": ["cwd"],
             },
         ),
         Tool(
             name="uv_lock",
-            description="Generate or update the lock file (uv.lock).",
+            description="Generate or update the lock file (uv.lock). IMPORTANT: Always specify cwd.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -201,9 +217,10 @@ async def list_tools() -> list[Tool]:
                     },
                     "cwd": {
                         "type": "string",
-                        "description": "Working directory for the command",
+                        "description": "Working directory (user's project path). Required.",
                     },
                 },
+                "required": ["cwd"],
             },
         ),
         Tool(
@@ -248,7 +265,8 @@ async def list_tools() -> list[Tool]:
 @server.call_tool()
 async def call_tool(name: str, arguments: dict[str, Any]) -> CallToolResult:
     """Handle tool calls."""
-    cwd = arguments.get("cwd")
+    # Get workspace directory - never default to plugin directory
+    cwd = get_workspace_cwd(arguments)
 
     if name == "uv_init":
         args = ["init"]

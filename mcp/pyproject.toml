@@ -2,7 +2,6 @@
 name = "cc-uv-mcp"
 version = "0.1.0"
 description = "MCP server for uv Python package manager integration with Claude Code"
-readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "mcp>=1.0.0",

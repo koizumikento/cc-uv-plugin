@@ -354,11 +354,16 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> CallToolResult:
     return CallToolResult(content=[TextContent(type="text", text=response)])
 
 
-async def main():
-    """Run the MCP server."""
+async def _async_main():
+    """Run the MCP server (async implementation)."""
     async with stdio_server() as (read_stream, write_stream):
         await server.run(read_stream, write_stream, server.create_initialization_options())
 
 
+def main():
+    """Synchronous entrypoint for console script."""
+    asyncio.run(_async_main())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

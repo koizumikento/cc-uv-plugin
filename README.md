@@ -10,46 +10,29 @@ Claude Code plugin optimized for Python development with [uv](https://github.com
 
 ## Installation
 
-### 1. Clone this repository
+### Using the Plugin Marketplace
 
+```bash
+# Add as a local marketplace
+/plugin marketplace add /path/to/cc-uv-plugin
+
+# Install the plugin
+/plugin install cc-uv-plugin
+```
+
+### Manual Installation
+
+1. Clone this repository:
 ```bash
 git clone https://github.com/your-username/cc-uv-plugin.git
-cd cc-uv-plugin
 ```
 
-### 2. Set up the plugin
-
-Copy the `.claude` directory to your project:
-
-```bash
-cp -r .claude /path/to/your/project/
-```
-
-Or symlink it for global use:
-
-```bash
-ln -s $(pwd)/.claude ~/.claude
-```
-
-### 3. (Optional) Install the MCP Server
-
-For advanced uv tool integration:
-
-```bash
-cd mcp
-uv sync
-```
-
-Then add to your Claude Code settings (`~/.config/claude/settings.json`):
-
+2. Add to your Claude Code settings (`.claude/settings.json`):
 ```json
 {
-  "mcpServers": {
-    "uv-tools": {
-      "command": "uv",
-      "args": ["run", "--directory", "/path/to/cc-uv-plugin/mcp", "python", "server.py"]
-    }
-  }
+  "plugins": [
+    "/path/to/cc-uv-plugin"
+  ]
 }
 ```
 
@@ -82,7 +65,7 @@ Then add to your Claude Code settings (`~/.config/claude/settings.json`):
 
 ## MCP Server Tools
 
-When the MCP server is enabled, Claude Code gains access to these tools:
+When the plugin is installed, Claude Code gains access to these tools:
 
 | Tool | Description |
 |------|-------------|
@@ -110,21 +93,20 @@ The plugin includes a session initialization hook that:
 
 ```
 cc-uv-plugin/
-├── README.md
-├── .claude/
-│   ├── CLAUDE.md           # Project context for Claude
-│   ├── commands/           # Slash command definitions
-│   │   ├── uv-init.md
-│   │   ├── uv-add.md
-│   │   ├── uv-test.md
-│   │   ├── uv-run.md
-│   │   ├── uv-check.md
-│   │   ├── uv-lint.md
-│   │   ├── uv-typecheck.md
-│   │   └── uv-ci.md
-│   ├── hooks/              # Hook scripts
-│   │   └── session-init.sh
-│   └── settings.json       # Hook configuration
+├── .claude-plugin/
+│   └── plugin.json         # Plugin metadata
+├── .mcp.json               # MCP server configuration
+├── commands/               # Slash command definitions
+│   ├── uv-init.md
+│   ├── uv-add.md
+│   ├── uv-test.md
+│   ├── uv-run.md
+│   ├── uv-check.md
+│   ├── uv-lint.md
+│   ├── uv-typecheck.md
+│   └── uv-ci.md
+├── hooks/                  # Event handlers
+│   └── session-init.sh
 └── mcp/
     ├── server.py           # MCP server implementation
     └── pyproject.toml      # MCP server dependencies

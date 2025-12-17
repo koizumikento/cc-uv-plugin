@@ -26,9 +26,11 @@ This plugin provides seamless integration between Claude Code and uv (the fast P
 ## Project Structure
 
 ```
-.claude/
-├── CLAUDE.md           # This file
-├── commands/           # Slash command definitions
+cc-uv-plugin/
+├── .claude-plugin/
+│   └── plugin.json       # Plugin metadata
+├── .mcp.json             # MCP server configuration
+├── commands/             # Slash command definitions
 │   ├── uv-init.md
 │   ├── uv-add.md
 │   ├── uv-test.md
@@ -37,13 +39,11 @@ This plugin provides seamless integration between Claude Code and uv (the fast P
 │   ├── uv-lint.md
 │   ├── uv-typecheck.md
 │   └── uv-ci.md
-├── hooks/              # Hook scripts
+├── hooks/                # Event handlers
 │   └── session-init.sh
-└── settings.json       # Hook configuration
-mcp/
-├── server.py           # MCP server implementation
-└── tools/              # Tool implementations
-    └── uv_tools.py
+└── mcp/
+    ├── server.py         # MCP server implementation
+    └── pyproject.toml
 ```
 
 ## uv Best Practices

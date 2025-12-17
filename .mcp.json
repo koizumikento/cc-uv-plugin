@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "uv-tools": {
+      "command": "uv",
+      "args": ["run", "--directory", "${pluginDir}/mcp", "python", "server.py"]
+    }
+  }
+}

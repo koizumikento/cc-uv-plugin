@@ -62,6 +62,9 @@ Then add to your Claude Code settings (`~/.config/claude/settings.json`):
 | `/uv-test [args]` | Run pytest tests via uv |
 | `/uv-run <command>` | Execute any command in the uv environment |
 | `/uv-check` | Check project dependencies and environment |
+| `/uv-lint [args]` | Run ruff linting and formatting |
+| `/uv-typecheck [path]` | Run mypy type checking |
+| `/uv-ci` | Run all CI checks (ruff + mypy + pytest) |
 
 ### Examples
 
@@ -72,6 +75,9 @@ Then add to your Claude Code settings (`~/.config/claude/settings.json`):
 /uv-test -v
 /uv-run python main.py
 /uv-check
+/uv-lint fix
+/uv-typecheck src/
+/uv-ci
 ```
 
 ## MCP Server Tools
@@ -112,7 +118,10 @@ cc-uv-plugin/
 │   │   ├── uv-add.md
 │   │   ├── uv-test.md
 │   │   ├── uv-run.md
-│   │   └── uv-check.md
+│   │   ├── uv-check.md
+│   │   ├── uv-lint.md
+│   │   ├── uv-typecheck.md
+│   │   └── uv-ci.md
 │   ├── hooks/              # Hook scripts
 │   │   └── session-init.sh
 │   └── settings.json       # Hook configuration

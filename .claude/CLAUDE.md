@@ -19,6 +19,9 @@ This plugin provides seamless integration between Claude Code and uv (the fast P
 | `/uv-test` | Run tests using pytest via uv |
 | `/uv-run` | Execute any command in the uv environment |
 | `/uv-check` | Check project dependencies and environment |
+| `/uv-lint` | Run ruff linting and formatting checks |
+| `/uv-typecheck` | Run mypy type checking |
+| `/uv-ci` | Run all CI checks (ruff + mypy + pytest) |
 
 ## Project Structure
 
@@ -30,7 +33,10 @@ This plugin provides seamless integration between Claude Code and uv (the fast P
 │   ├── uv-add.md
 │   ├── uv-test.md
 │   ├── uv-run.md
-│   └── uv-check.md
+│   ├── uv-check.md
+│   ├── uv-lint.md
+│   ├── uv-typecheck.md
+│   └── uv-ci.md
 ├── hooks/              # Hook scripts
 │   └── session-init.sh
 └── settings.json       # Hook configuration

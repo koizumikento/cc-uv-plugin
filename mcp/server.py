@@ -7,7 +7,9 @@ enabling Python development workflows directly through the assistant.
 """
 
 import asyncio
+import shutil
 import subprocess
+from pathlib import Path
 from typing import Any
 
 from mcp.server import Server
@@ -42,6 +44,24 @@ def require_cwd(arguments: dict[str, Any], tool_name: str) -> str | None:
 
 def run_uv_command(args: list[str], cwd: str | None = None) -> dict[str, Any]:
     """Execute a uv command and return the result."""
+    # Validate cwd exists before running command
+    if cwd and not Path(cwd).is_dir():
+        return {
+            "success": False,
+            "stdout": "",
+            "stderr": f"Working directory does not exist: {cwd}",
+            "returncode": -1,
+        }
+
+    # Check if uv is available
+    if not shutil.which("uv"):
+        return {
+            "success": False,
+            "stdout": "",
+            "stderr": "uv is not installed. Install it with: curl -LsSf https://astral.sh/uv/install.sh | sh",
+            "returncode": -1,
+        }
+
     try:
         result = subprocess.run(
             ["uv"] + args,
@@ -61,13 +81,6 @@ def run_uv_command(args: list[str], cwd: str | None = None) -> dict[str, Any]:
             "success": False,
             "stdout": "",
             "stderr": "Command timed out after 5 minutes",
-            "returncode": -1,
-        }
-    except FileNotFoundError:
-        return {
-            "success": False,
-            "stdout": "",
-            "stderr": "uv is not installed. Install it with: curl -LsSf https://astral.sh/uv/install.sh | sh",
             "returncode": -1,
         }
     except Exception as e:

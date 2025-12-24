@@ -1,0 +1,8 @@
+{
+  "name": "cc-uv-plugin",
+  "description": "Claude Code plugin optimized for Python development with uv - provides slash commands for testing, linting, and type checking",
+  "version": "1.0.0",
+  "author": {
+    "name": "koizumikento"
+  }
+}

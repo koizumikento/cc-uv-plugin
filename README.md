@@ -115,7 +115,29 @@ cc-uv-plugin/
 ## Requirements
 
 - [uv](https://github.com/astral-sh/uv) installed on your system
+- Python 3.11+ for the plugin's MCP server; use the latest security patch release
+  supplied by your Python distributor. Python 3.10 is end-of-life (see the
+  [Python support status](https://devguide.python.org/versions/)). This requirement
+  applies to the plugin server, not the projects it manages.
 - [Claude Code](https://claude.ai/code) CLI
+
+### Python and certificate security
+
+The MCP server requires `certifi>=2026.10.19` for the HTTP dependencies pulled in
+by the MCP SDK. It uses the SDK's 1.x API, so the dependency is bounded below 2.
+The certificate floor follows the
+[emSign certificate advisory](https://github.com/certifi/python-certifi/security/advisories/GHSA-6q48-6c7w-9gw2)
+and the [Python security release guidance](https://blog.python.org/2026/10/python-3151-3149-31317/).
+After updating the plugin, restart the MCP server so `uv run` synchronizes its
+environment with `mcp/pyproject.toml`. If you maintain an MCP server lock file,
+refresh it before restarting; there is no lock file committed in this repository.
+
+This dependency floor does not update uv's bundled CA store, pip's vendored
+certificates, Python/OpenSSL, or the operating system trust store. Review and
+update those separately using your distributor's guidance, including any custom
+CA bundles or system certificate overrides. See
+[uv's TLS certificate documentation](https://docs.astral.sh/uv/concepts/authentication/certificates/).
+The plugin does not upgrade these system tools automatically.
 
 ### Installing uv
 
